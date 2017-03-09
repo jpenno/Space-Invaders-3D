@@ -31,6 +31,8 @@ public:
 	void SetProjectionMatrix(glm::mat4 a_projectionMatrix) { m_projectionMatrix = a_projectionMatrix; }
 	
 	glm::mat4* GetViewMatrix() { return &m_viewMatrix; }
+	glm::mat4 GetViewMatrixCopy() { return m_viewMatrix; }
+
 	glm::mat4* GetProjectionMatrix() { return &m_projectionMatrix; }
 
 

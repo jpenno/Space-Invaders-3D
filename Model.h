@@ -27,6 +27,8 @@ private:
 public:
 	Model();
 	~Model();
+
+	glm::mat4 GetPosition() { return m_position; }
 	void SetMesh(Mesh &a_mesh);
 	void SetShader(Shader *a_shader);
 

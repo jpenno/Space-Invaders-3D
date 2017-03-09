@@ -155,7 +155,7 @@ void Space_Invaders_3DApp::update(float deltaTime) {
 	m_player.UpDate(deltaTime);
 
 	// up date the camera position relative to the player
-	m_camera.SetPoition(m_player.m_position + m_player.m_CameraOffSet, m_player.m_position);
+	//m_camera.SetPoition(m_player.m_position + m_player.m_CameraOffSet, m_player.m_position);
 }
 
 void Space_Invaders_3DApp::draw() {
@@ -165,6 +165,12 @@ void Space_Invaders_3DApp::draw() {
 	// update perspective based on screen size
 	m_camera.SetProjectionMatrix(glm::perspective(glm::pi<float>() * 0.25f, getWindowWidth() / (float)getWindowHeight(), 0.1f, 1000.0f));
 	
+	//glm::vec3 normal = glm::vec3(0, 1, 0);
+	//m_camera.SetViewMatrix(glm::reflect3D(m_plane.GetPosition(), normal));
+
+	glm::mat4 refMat = m_plane.GetPosition() * m_camera.GetViewMatrixCopy();
+	m_camera.SetViewMatrix(refMat);
+
 	// bind the FBO so that we can render to the framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 	glViewport(0, 0, 512, 512);
@@ -182,7 +188,10 @@ void Space_Invaders_3DApp::draw() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1280, 720);
 	glClearColor(0.25f, 0.25f, 0.25f, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	m_camera.SetPoition(m_player.m_position + m_player.m_CameraOffSet, m_player.m_position);
+
 	m_player.Draw();
 
 	m_plane.Draw();

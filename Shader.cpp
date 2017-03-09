@@ -9,8 +9,6 @@
 
 using namespace std;
 
-// testing if get is working
-
 Shader::Shader()
 {
 }
