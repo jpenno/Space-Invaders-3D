@@ -151,12 +151,11 @@ void Space_Invaders_3DApp::update(float deltaTime) {
 		quit();
 
 	// update camera position
-	m_camera.Update(deltaTime);
+	//m_camera.Update(deltaTime);
 	m_player.UpDate(deltaTime);
 
 	// up date the camera position relative to the player
 	m_camera.SetPoition(m_player.m_position + m_player.m_CameraOffSet, m_player.m_position);
-
 }
 
 void Space_Invaders_3DApp::draw() {
@@ -179,15 +178,11 @@ void Space_Invaders_3DApp::draw() {
 		m_enemy[i].Draw();
 	}
 
-
-
 	// unbind the FBO so that we can render to the back buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glViewport(0, 0, 1280, 720);
 	glClearColor(0.25f, 0.25f, 0.25f, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	//m_gtShader.SetTextureHandel(&m_fboTexture);
-	//m_plane.SetShader(&m_gtShader);
-
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_player.Draw();
 
 	m_plane.Draw();

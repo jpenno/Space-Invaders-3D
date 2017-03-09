@@ -9,6 +9,7 @@
 
 using namespace std;
 
+// testing if get is working
 
 Shader::Shader()
 {
@@ -93,8 +94,6 @@ std::string Shader::StringFromFile(const char * a_filename)
 	std::string fileString((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
 	return fileString;
-
-
 }
 
 void Shader::Load(const char* a_vsFilePath, const char* a_fsFilePath)
@@ -132,5 +131,4 @@ void Shader::Load(const char* a_vsFilePath, const char* a_fsFilePath)
 	// as they have been combined into the shaderProgram
 	glDeleteShader(vs);
 	glDeleteShader(fs);
-
 }
