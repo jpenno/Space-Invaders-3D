@@ -89,12 +89,12 @@ void OBJ::Make()
 	}";
 
 	const char* fsSource =
-		"#version 410\n \
-		in vec4 vNormal; \n\
-		in vec2 vuv; \n\
-		out vec4 FragColor; \n\
-		void main() { \n\
-			FragColor =  vec4(1,1,1,1); \n\
+		"#version 410					\n \
+		in vec4 vNormal;				\n \
+		in vec2 vuv;					\n \
+		out vec4 FragColor;				\n \
+		void main() {					\n \
+			FragColor =  vec4(1,1,1,1); \n \
 		}";
 
 
@@ -110,7 +110,6 @@ void OBJ::Make()
 	glLinkProgram(m_shader);
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-
 }
 
 void OBJ::UpDate(float a_deltaTime)

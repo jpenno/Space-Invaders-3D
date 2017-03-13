@@ -16,7 +16,7 @@ private:
 	struct GLInfo {
 		unsigned int vao;
 		unsigned int vbo1;
-		unsigned int vbo2; 
+		unsigned int vbo2;
 		unsigned int faceCount; 
 	};
 

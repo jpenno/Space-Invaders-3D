@@ -4,8 +4,6 @@
 #include "Input.h"
 #include <glm/glm.hpp>
 #include <glm/ext.hpp>
-// glm::translate, glm::rotate, glm::scale, glm::perspective
-#include <glm/gtc/matrix_transform.hpp>
 
 using glm::vec3;
 using glm::vec4;
@@ -28,6 +26,9 @@ bool Space_Invaders_3DApp::startup() {
 	// initialize gizmo primitive counts
 	Gizmos::create(10000, 10000, 10000, 10000);
 
+	// set up render target
+	m_reflectionRenderTarget.Make();
+
 	// set the enemy shader
 	m_etShader.LoadFromFile("./textured.vert", "./textured.frag");
 	m_etShader.Set(*m_camera.GetViewMatrix(), *m_camera.GetProjectionMatrix());
@@ -42,10 +43,9 @@ bool Space_Invaders_3DApp::startup() {
 	m_gtShader.LoadFromFile("./textured.vert", "./textured.frag");
 	m_gtShader.Set(*m_camera.GetViewMatrix(), *m_camera.GetProjectionMatrix());
 	m_gtShader.SetColro(glm::vec3(1, 1, 1));
-	m_gtShader.SetTextureHandel(&m_fboTexture);
-	//m_plane.SetShader(&m_gtShader);
+	m_gtShader.SetTextureHandel(m_reflectionRenderTarget.GetTexture());
 
-
+	// make meshes
 	m_cube.Make();
 	m_planeMesh.Make();
 	m_fbxMesh.Make();
@@ -58,67 +58,16 @@ bool Space_Invaders_3DApp::startup() {
 	m_plane.SetShader(&m_gtShader);
 
 	glm::mat4 position = glm::mat4{
-		5,0,0,0,
-		0,5,0,0,
-		0,0,10,0,
-		0, -1, 2, 1
+		3,0,0,0,
+		0,3,0,0,
+		0,0,3,0,
+		0, -1, 10, 1
 	};
 	m_plane.SetPostion(position);
 
+	m_enemyManager.Spawn(5, 5, 2, &m_etShader, &m_cube);
 
-	float width = 5;
-	float heigt = 5;
-	float spaceing = 2;
-
-	for (int i = 0; i < width; i++)
-	{
-		for (int j = 0; j < heigt; j++)
-		{
-			Enemy enemy;
-			enemy.m_position = glm::vec3(
-				(i * spaceing) - (width* spaceing * 0.5f),
-				1,
-				(j * spaceing) + 3);
-
-			enemy.SetModel(&m_etShader, &m_cube);
-			m_enemy.push_back(enemy);
-		}
-	}
-
-	// setup and bind a framebuffer
-	glGenFramebuffers(1, &m_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-
-	// create a texture and bind it
-	glGenTextures(1, &m_fboTexture);
-	glBindTexture(GL_TEXTURE_2D, m_fboTexture);
-
-	// specify texture format for storage
-	glTexStorage2D(GL_TEXTURE_2D, 1, GL_RGBA8, 512, 512);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	// attach it to the framebuffer as the first colour attachment
-	// the FBO MUST still be bound
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
-		m_fboTexture, 0);
-
-	// while the FBO is still bound
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
-	glDrawBuffers(1, drawBuffers);
-
-	// setup and bind a 24bit depth buffer as a render buffer
-	glGenRenderbuffers(1, &m_fboDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, m_fboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24,
-		512, 512);
-
-	// while the FBO is still bound
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT,
-		GL_RENDERBUFFER, m_fboDepth);
-
-
-	testing.Make();
+	m_animation.Make();
 
 	return true;
 }
@@ -129,6 +78,7 @@ void Space_Invaders_3DApp::shutdown() {
 	m_cube.Destory();
 	m_planeMesh.Destory();
 	m_fbxMesh.Destory();
+	m_enemyManager.Delete();
 }
 
 void Space_Invaders_3DApp::update(float deltaTime) {
@@ -164,7 +114,7 @@ void Space_Invaders_3DApp::update(float deltaTime) {
 	// up date the camera position relative to the player
 	//m_camera.SetPoition(m_player.m_position + m_player.m_CameraOffSet, m_player.m_position);
 
-	testing.UpDate(deltaTime);
+	m_animation.UpDate(deltaTime);
 }
 
 void Space_Invaders_3DApp::draw() {
@@ -173,24 +123,18 @@ void Space_Invaders_3DApp::draw() {
 
 	// update perspective based on screen size
 	m_camera.SetProjectionMatrix(glm::perspective(glm::pi<float>() * 0.25f, getWindowWidth() / (float)getWindowHeight(), 0.1f, 1000.0f));
-	
+
 	// make the reflection matrix
 	glm::mat4 refMat = m_camera.GetViewMatrixCopy() * m_plane.GetPosition();
 	m_camera.SetViewMatrix(refMat);
 
-	
-	// bind the FBO so that we can render to the framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
-	glViewport(0, 0, 512, 512);
-	glClearColor(0.75f, 0.75f, 0.75f, 1);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
+	m_reflectionRenderTarget.Use();
+
+	m_plane.Draw();
+
 	m_player.Draw();
-	
-	for (int i = 0; i < m_enemy.size(); i++)
-	{
-		m_enemy[i].Draw();
-	}
+
+	m_enemyManager.Draw();
 
 	// unbind the FBO so that we can render to the back buffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -199,20 +143,17 @@ void Space_Invaders_3DApp::draw() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//m_camera.SetPoition(m_player.m_position + m_player.m_CameraOffSet, m_player.m_position);
-	
+
 	m_player.Draw();
-	
+
 	m_plane.Draw();
-	
+
 	m_fbxMesh.Draw(glm::perspective(glm::pi<float>() * 0.25f, getWindowWidth() / (float)getWindowHeight(), 0.1f, 1000.0f),
 		m_camera.GetViewMatrixCopy());
 	
-	for (int i = 0; i < m_enemy.size(); i++)
-	{
-		m_enemy[i].Draw();
-	}
+	m_enemyManager.Draw();
 
-	testing.Draw(*m_camera.GetProjectionMatrix(), m_camera.GetViewMatrixCopy());
+	m_animation.Draw(*m_camera.GetProjectionMatrix(), m_camera.GetViewMatrixCopy());
 
 	Gizmos::draw(*m_camera.GetProjectionMatrix() * *m_camera.GetViewMatrix());
 }

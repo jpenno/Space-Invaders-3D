@@ -10,7 +10,8 @@
 #include "DiffuseShader.h"
 #include "TextureShader.h"
 #include "Player.h"
-#include "Enemy.h"
+#include "EnemyManager.h"
+#include "RenderTarget.h"
 #include <vector>
 
 #include "OBJ.h"
@@ -18,7 +19,6 @@
 
 class Space_Invaders_3DApp : public aie::Application {
 public:
-
 	Space_Invaders_3DApp();
 	virtual ~Space_Invaders_3DApp();
 
@@ -32,7 +32,7 @@ protected:
 	Camera m_camera;
 
 	Player m_player;
-	std::vector<Enemy> m_enemy;
+	EnemyManager m_enemyManager;
 
 	DiffuseShader m_dShader;
 	TextureShader m_etShader;
@@ -46,13 +46,7 @@ protected:
 	Model m_plane;
 	Model m_testing;
 
+	RenderTarget m_reflectionRenderTarget;
 
-
-	// FBO
-	unsigned int m_fbo;
-	unsigned int m_fboTexture;
-	unsigned int m_fboDepth;
-
-
-	OBJ testing;
+	OBJ m_animation;
 };

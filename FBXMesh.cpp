@@ -18,27 +18,27 @@ void FBXMesh::LoadFBX(char* filePath)
 void FBXMesh::Make()
 {
 	const char* vsSource =
-		"#version 410\n \
-		in vec4 position; \n\
-		in vec4 normal; \n\
-		in vec2 uv; \n\
-		out vec4 vNormal; \n\
-		out vec2 vuv; \n\
-		uniform mat4 projectionViewWorldMatrix; \n\
-		void main() { \n\
-		vNormal = normal; \n\
-		vuv = uv; \n\
-		gl_Position = projectionViewWorldMatrix*position; \n\
+		"#version 410									  \n  \
+		in vec4 position;								  \n  \
+		in vec4 normal;									  \n  \
+		in vec2 uv;										  \n  \
+		out vec4 vNormal;								  \n  \
+		out vec2 vuv;									  \n  \
+		uniform mat4 projectionViewWorldMatrix;			  \n  \
+		void main() {									  \n  \
+		vNormal = normal;								  \n  \
+		vuv = uv;										  \n  \
+		gl_Position = projectionViewWorldMatrix*position; \n  \
 		}";
 
 	const char* fsSource =
-		"#version 410\n \
-		in vec4 vNormal; \n\
-		in vec2 vuv; \n\
-		out vec4 FragColor; \n\
-		uniform sampler2D diffuseTexture; \n\
-		void main() { \n\
-		FragColor = texture2D(diffuseTexture, vuv) * vec4(1,1,1,1); \n\
+		"#version 410												\n	\
+		in vec4 vNormal;											\n	\
+		in vec2 vuv;												\n	\
+		out vec4 FragColor;											\n	\
+		uniform sampler2D diffuseTexture;							\n	\
+		void main() {												\n	\
+		FragColor = texture2D(diffuseTexture, vuv) * vec4(1,1,1,1); \n	\
 		}";
 
 	unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
@@ -56,8 +56,6 @@ void FBXMesh::Make()
 	glLinkProgram(m_shader);
 	glDeleteShader(vertexShader);
 	glDeleteShader(fragmentShader);
-
-
 
 
 	m_myFbxModel = new FBXFile();
@@ -134,20 +132,25 @@ void FBXMesh::Draw(glm::mat4 a_projectionMat, glm::mat4 a_viewmat)
 	);
 	glm::mat4 modelViewProjection = a_projectionMat * a_viewmat * model;
 	glUseProgram(m_shader);
+
 	// send uniform variables, in this case the "projectionViewWorldMatrix"
 	unsigned int mvpLoc = glGetUniformLocation(m_shader, "projectionViewWorldMatrix");
 	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &modelViewProjection[0][0]);
+
 	// loop through each mesh within the fbx file
 	for (unsigned int i = 0; i < m_myFbxModel->getMeshCount(); ++i)
 	{
 		FBXMeshNode* mesh = m_myFbxModel->getMeshByIndex(i);
 		GLMesh* glData = (GLMesh*)mesh->m_userData;
+
 		// get the texture from the model
 		unsigned int diffuseTexture = m_myFbxModel->getTextureByIndex(mesh->m_material->DiffuseTexture);
+
 		// bid the texture and send it to our shader
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseTexture);
 		glUniform1i(glGetUniformLocation(m_shader, "diffuseTexture"), 0);
+
 		// draw the mesh
 		glBindVertexArray(glData->vao);
 		glDrawElements(GL_TRIANGLES, mesh->m_indices.size(), GL_UNSIGNED_INT, 0);
