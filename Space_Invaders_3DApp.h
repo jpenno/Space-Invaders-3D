@@ -5,12 +5,15 @@
 
 #include "BoxMesh.h"
 #include "PlaneMesh.h"
+#include "FBXMesh.h"
 #include "Model.h"
 #include "DiffuseShader.h"
 #include "TextureShader.h"
 #include "Player.h"
 #include "Enemy.h"
 #include <vector>
+
+#include "OBJ.h"
 
 
 class Space_Invaders_3DApp : public aie::Application {
@@ -38,12 +41,18 @@ protected:
 
 	BoxMesh m_cube;
 	PlaneMesh m_planeMesh;
+	FBXMesh m_fbxMesh;
 
 	Model m_plane;
 	Model m_testing;
+
+
 
 	// FBO
 	unsigned int m_fbo;
 	unsigned int m_fboTexture;
 	unsigned int m_fboDepth;
+
+
+	OBJ testing;
 };
